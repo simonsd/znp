@@ -3,6 +3,7 @@
 # Analogous to my snp script for BTRFS: https://gist.github.com/erikw/5229436
 # Usage: $ znp <commands>
 # e.g.: $ znp pgk upgrade
+# e.g.: $ znp portmaster -aG
 # e.g.: $ znp freebsd-upgrade install
 
 zfs_pool=zroot
