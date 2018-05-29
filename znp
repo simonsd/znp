@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Runs a command wrapped in ZFS pre-post snapshots. The whole data pool is recursively snapshotted.
+# Analogous to my snp script for BTRFS: https://gist.github.com/erikw/5229436
+# Usage: $ znp <commands>
+# e.g.: $ znp pgk upgrade
+# e.g.: $ znp freebsd-upgrade install
+
+zfs_pool=zroot
+
+log_path="/var/local/log/znp"
+date=$(date "+%Y-%m-%d-%H%M%S")
+snapshot_prefix="znp_${date}"
+log_file="${log_path}/znp_${date}.log"
+
+! [ -d $log_path ] && mkdir -p $log_path
+# Log stdout and stderr. Reference: http://stackoverflow.com/questions/3173131/redirect-copy-of-stdout-to-log-file-from-within-bash-script-itself
+exec >  >(tee -a "$log_file")
+exec 2> >(tee -a "$log_file" >&2)
+
+cmd="$@"
+
+echo "> Logging to: ${log_file}"
+
+# snapper create --type=pre --cleanup-algorithm=number --print-number --description="${cmd}"
+snapshot_pre="${zfs_pool}@${snapshot_prefix}_pre"
+zfs snapshot -r $snapshot_pre
+echo "> New pre snapshot created: ${snapshot_pre}"
+echo -e "> Running command \"${cmd}\".\n"
+
+eval "$cmd"
+echo -e "\n"
+
+snapshot_post="${zfs_pool}@${snapshot_prefix}_post"
+zfs snapshot -r $snapshot_post
+echo "> New post snapshot created: ${snapshot_post}"
+
+echo -e "\n"
+echo "> Destroy these snapshots with:"
+echo "zfs destroy -r ${snapshot_pre} && zfs destroy -r ${snapshot_post}"
+
+echo "> See the diff between them using"
+echo "zfs diff ${snapshot_pre} ${snapshot_post}"
+
+echo "> Destroy all snapshots created with znp:"
+echo "zfs list -H -o name -t snapshot | grep "${zfs_pool}@znp_" | xargs -n1 zfs destroy -r"
