@@ -35,7 +35,7 @@ zfs snapshot -r $snapshot_post
 echo -e "\n> New post snapshot created: ${snapshot_post}"
 
 
-echo  "> See the diff between them using"
+echo  "> See the diff between them using:"
 # Tip: add -t to xargs to print every individual command.
 echo "zfs list -t snapshot -o name | grep ${snapshot_prefix} | cut -d@ -f1 | uniq | xargs -I{} -n1 sh -c 'zfs diff -F {}@${snapshot_prefix}_pre {}@${snapshot_prefix}_post 2>/dev/null'"
 
