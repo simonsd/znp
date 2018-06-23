@@ -44,3 +44,6 @@ echo "zfs destroy -r ${snapshot_pre} && zfs destroy -r ${snapshot_post}"
 
 echo "> Destroy all snapshots created with znp:"
 echo "zfs list -H -o name -t snapshot | grep "${zfs_pool}@znp_" | xargs -n1 zfs destroy -r"
+
+echo "> Destroy the 10 oldest snapshot pairs created with znp:"
+echo "zfs list -H -o name -t snapshot | grep "${zfs_pool}@znp_" | head -20 | xargs -n1 zfs destroy -r"
