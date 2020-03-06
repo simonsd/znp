@@ -30,9 +30,11 @@ echo -e "> Running command \"${cmd}\".\n"
 
 eval "$cmd"
 
+ecode="$?"
+echo -e "\n> Command exit code: ${ecode}"
 snapshot_post="${zfs_pool}@${snapshot_prefix}_post"
 zfs snapshot -r $snapshot_post
-echo -e "\n> New post snapshot created: ${snapshot_post}"
+echo "> New post snapshot created: ${snapshot_post}"
 
 
 echo  "> See the diff between them using:"
