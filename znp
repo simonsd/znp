@@ -19,12 +19,13 @@ exec >  >(tee -a "$log_file")
 exec 2> >(tee -a "$log_file" >&2)
 
 cmd="$@"
+snap_label=$(echo "$cmd"|cut -c-30)
 
 echo "> Logging to: ${log_file}"
 
 # snapper create --type=pre --cleanup-algorithm=number --print-number --description="${cmd}"
 snapshot_pre="${zfs_pool}@${snapshot_prefix}_pre"
-zfs snapshot -r $snapshot_pre
+zfs snapshot -r -o znp:command="$snap_label" $snapshot_pre
 echo "> New pre snapshot created: ${snapshot_pre}"
 echo -e "> Running command \"${cmd}\".\n"
 
@@ -33,9 +34,12 @@ eval "$cmd"
 ecode="$?"
 echo -e "\n> Command exit code: ${ecode}"
 snapshot_post="${zfs_pool}@${snapshot_prefix}_post"
-zfs snapshot -r $snapshot_post
+zfs snapshot -r -o znp:command="$snap_label" $snapshot_post
 echo "> New post snapshot created: ${snapshot_post}"
 
+echo "# List znp created snapshots:"
+echo "zfs list -H -t snap -o name,znp:command | grep '@znp_' | column -tl2"
+echo ""
 
 echo  "> See the diff between them using:"
 # Tip: add -t to xargs to print every individual command.
