@@ -47,3 +47,9 @@ echo "# Command return code: ${ecode}"
 echo ""
 
 znp_snapshot post
+
+# TODO:
+# - error handling
+# - ensure run as root/sudo
+# - config file to set zpool
+# - handle multiple zpools for split boot setup
