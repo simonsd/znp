@@ -9,7 +9,7 @@
 znp_config='/etc/znp/znp.conf'
 
 test -f "$znp_config" && . "$znp_config"
-zfs_pool="${ZPOOL:-zroot}"
+datasets=(${DATASETS[@]:-zroot})
 
 cmd="$@"
 log_path="/var/log/znp"
@@ -26,10 +26,12 @@ znp_snapshot(){
     *)            echo "[ERROR] Invalid snapshot type \"$snap_type\" requested, please use pre|post"; exit 1 ;;
   esac
 
-  snapshot_name="${zfs_pool}@${snapshot_prefix}_${snap_type}"
-  zfs snapshot -r -o znp:command="$snap_label" "$snapshot_name"
-  echo "# New ${snap_type} snapshot created: ${snapshot_name}"
-  echo ""
+  for dataset in ${datasets[@]}; do
+    snapshot_name="${dataset}@${snapshot_prefix}_${snap_type}"
+    echo "# Creating ${snap_type} snapshot: ${snapshot_name}"
+    zfs snapshot -r -o znp:command="$snap_label" "$snapshot_name"
+    echo ""
+  done
 }
 
 ! [ -d $log_path ] && mkdir -p $log_path
@@ -54,4 +56,3 @@ znp_snapshot post
 # TODO:
 # - error handling
 # - ensure run as root/sudo
-# - handle multiple zpools for split boot setup
