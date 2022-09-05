@@ -8,7 +8,7 @@
 
 zfs_pool=zroot
 
-log_path="/var/local/log/znp"
+log_path="/var/log/znp"
 date=$(date "+%Y-%m-%d-%H%M%S")
 snapshot_prefix="znp_${date}"
 log_file="${log_path}/znp_${date}.log"
