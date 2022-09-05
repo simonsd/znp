@@ -6,7 +6,10 @@
 # e.g.: $ znp portmaster -aG
 # e.g.: $ znp freebsd-upgrade install
 
-zfs_pool=zroot
+znp_config='/etc/znp/znp.conf'
+
+test -f "$znp_config" && . "$znp_config"
+zfs_pool="${ZPOOL:-zroot}"
 
 cmd="$@"
 log_path="/var/log/znp"
@@ -51,5 +54,4 @@ znp_snapshot post
 # TODO:
 # - error handling
 # - ensure run as root/sudo
-# - config file to set zpool
 # - handle multiple zpools for split boot setup
