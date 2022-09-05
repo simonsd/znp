@@ -47,23 +47,3 @@ echo "# Command return code: ${ecode}"
 echo ""
 
 znp_snapshot post
-
-echo "# List znp created snapshots:"
-echo "zfs list -H -t snap -o name,znp:command | grep '@znp_' | column -tl2"
-echo ""
-
-echo  "# See the diff between them using:"
-# Tip: add -t to xargs to print every individual command.
-echo "zfs list -t snapshot -o name | grep ${snapshot_prefix} | cut -d@ -f1 | uniq | xargs -I{} -n1 sh -c 'zfs diff -F {}@${snapshot_prefix}_pre {}@${snapshot_prefix}_post 2>/dev/null'"
-echo ""
-
-echo "# Destroy these snapshots with:"
-echo "zfs destroy -r ${snapshot_prefix}_pre && zfs destroy -r ${snapshot_prefix}_post"
-echo ""
-
-echo "# Destroy all snapshots created with znp:"
-echo "zfs list -H -o name -t snapshot | grep "${zfs_pool}@znp_" | xargs -n1 zfs destroy -r"
-echo ""
-
-echo "# Destroy the 10 oldest snapshot pairs created with znp:"
-echo "zfs list -H -o name -t snapshot | grep "${zfs_pool}@znp_" | head -20 | xargs -n1 zfs destroy -r"

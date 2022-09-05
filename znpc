@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# znp cli for common actions
+
+_znpc_list(){
+  zfs list -H -t snap -o name,znp:command | grep '@znp_' | column -tl2
+}
+
+case "$1" in
+  'ls'|'list') _znpc_list ;;
+  *)           echo "[ERROR] Unknown action \"$1\""; exit 1 ;;
+esac
+
+# TODO:
+# - delete SNAP|-a|--all|-l|--latest|-o|--oldest
+# - selection from ncurses list?
+# - list specific pool
+# - search specific command
+# - diff [snap1|latest] [snap2|current]
+
+# diff all recursive snapshots
+# zfs list -t snapshot -o name | grep ${snapshot_prefix} | cut -d@ -f1 | uniq | xargs -I{} -n1 sh -c 'zfs diff -F {}@${snapshot_prefix}_pre {}@${snapshot_prefi    x}_post 2>/dev/null'
+
+# Destroy created snapshots:
+# zfs destroy -r ${snapshot_prefix}_pre && zfs destroy -r ${snapshot_prefix}_post
+
+# Destroy all snapshots created with znp:
+# zfs list -H -o name -t snapshot | grep "${zfs_pool}@znp_" | xargs -n1 zfs destroy -r
+
+# Destroy the 10 oldest snapshot pairs created with znp:
+# zfs list -H -o name -t snapshot | grep "${zfs_pool}@znp_" | head -20 | xargs -n1 zfs destroy -r
