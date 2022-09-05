@@ -8,10 +8,26 @@
 
 zfs_pool=zroot
 
+cmd="$@"
 log_path="/var/log/znp"
 date=$(date "+%Y-%m-%d-%H%M%S")
 snapshot_prefix="znp_${date}"
 log_file="${log_path}/znp_${date}.log"
+snap_label=$(echo "$cmd"|cut -c-30)
+
+znp_snapshot(){
+  snap_type="${1:-pre}"
+
+  case "$snap_type" in
+    'pre'|'post') true ;;
+    *)            echo "[ERROR] Invalid snapshot type \"$snap_type\" requested, please use pre|post"; exit 1 ;;
+  esac
+
+  snapshot_name="${zfs_pool}@${snapshot_prefix}_${snap_type}"
+  zfs snapshot -r -o znp:command="$snap_label" "$snapshot_name"
+  echo "# New ${snap_type} snapshot created: ${snapshot_name}"
+  echo ""
+}
 
 ! [ -d $log_path ] && mkdir -p $log_path
 echo "# Logging to: ${log_file}"
@@ -20,14 +36,7 @@ echo ""
 exec >  >(tee -a "$log_file")
 exec 2> >(tee -a "$log_file" >&2)
 
-cmd="$@"
-snap_label=$(echo "$cmd"|cut -c-30)
-
-# snapper create --type=pre --cleanup-algorithm=number --print-number --description="${cmd}"
-snapshot_pre="${zfs_pool}@${snapshot_prefix}_pre"
-zfs snapshot -r -o znp:command="$snap_label" $snapshot_pre
-echo "# New pre snapshot created: ${snapshot_pre}"
-echo ""
+znp_snapshot pre
 
 echo "# Running command \"${cmd}\""
 echo "####### BEGIN COMMAND OUTPUT #######"
@@ -37,10 +46,7 @@ echo "####### END COMMAND OUTPUT #######"
 echo "# Command return code: ${ecode}"
 echo ""
 
-snapshot_post="${zfs_pool}@${snapshot_prefix}_post"
-zfs snapshot -r -o znp:command="$snap_label" $snapshot_post
-echo "# New post snapshot created: ${snapshot_post}"
-echo ""
+znp_snapshot post
 
 echo "# List znp created snapshots:"
 echo "zfs list -H -t snap -o name,znp:command | grep '@znp_' | column -tl2"
@@ -52,7 +58,7 @@ echo "zfs list -t snapshot -o name | grep ${snapshot_prefix} | cut -d@ -f1 | uni
 echo ""
 
 echo "# Destroy these snapshots with:"
-echo "zfs destroy -r ${snapshot_pre} && zfs destroy -r ${snapshot_post}"
+echo "zfs destroy -r ${snapshot_prefix}_pre && zfs destroy -r ${snapshot_prefix}_post"
 echo ""
 
 echo "# Destroy all snapshots created with znp:"
