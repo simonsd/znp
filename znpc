@@ -2,7 +2,7 @@
 # znp cli for common actions
 
 _znpc_list(){
-  zfs list -H -t snap -o name,znp:command | grep '@znp_' | column -tl2
+  zfs list -H -t snap -o name,used,znp:command | grep '@znp_' | column -tl3
 }
 
 case "$1" in
