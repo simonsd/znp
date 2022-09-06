@@ -1,0 +1,2 @@
+# set datasets to snapshot, defaults to ('zroot')
+#DATASETS=('zroot' 'example/foo')
